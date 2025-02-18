@@ -8,7 +8,9 @@ import sys
 from io import BytesIO
 from PIL import Image
 import requests
+
 from data.form.main_api import Ui_MainAPI
+
 
 # 1 Задание - Готовый редактор
 
@@ -80,7 +82,8 @@ class MainAPI(QMainWindow):
             imagePixmap.loadFromData(QByteArray(urlMap.content))
             self.ui.map.setPixmap(imagePixmap)
         except:
-            self.msg = QMessageBox(self).warning(self, 'Произошла ошибка', 'Вы не корректно ввели данные. Повторите попытку')
+            self.msg = QMessageBox(self).warning(self, 'Произошла ошибка',
+                                                 'Вы не корректно ввели данные. Повторите попытку')
             print(traceback.format_exc())
             return
 
