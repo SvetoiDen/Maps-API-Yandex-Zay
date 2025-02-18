@@ -10,6 +10,8 @@ from PIL import Image
 import requests
 from data.form.main_api import Ui_MainAPI
 
+# 1 Задание - Готовый редактор
+
 # XY_Line - вводим адрес
 # scaleLine - вводим масштаб
 
