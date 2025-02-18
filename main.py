@@ -25,6 +25,9 @@ class MainAPI(QMainWindow):
         self.geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
         self.map_api_server = "https://static-maps.yandex.ru/v1"
 
+        self.ui.label.setText("Введите адрес")
+        self.ui.label_2.setText("Введите масштаб")
+
         # ключ и масштаб карты
         self.apikey = "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
         self.ui.scaleLine.setText("0.005")
@@ -77,7 +80,9 @@ class MainAPI(QMainWindow):
             imagePixmap.loadFromData(QByteArray(urlMap.content))
             self.ui.map.setPixmap(imagePixmap)
         except:
+            self.msg = QMessageBox(self).warning(self, 'Произошла ошибка', 'Вы не корректно ввели данные. Повторите попытку')
             print(traceback.format_exc())
+            return
 
 
 if __name__ == '__main__':
