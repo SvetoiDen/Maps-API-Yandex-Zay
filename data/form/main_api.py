@@ -31,6 +31,7 @@ class Ui_MainAPI(object):
         self.gridLayout.addWidget(self.SubmitMain, 1, 0, 1, 2)
         self.verticalLayout.addLayout(self.gridLayout)
         self.map = QtWidgets.QLabel(parent=self.centralwidget)
+        self.map.setText("")
         self.map.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.map.setObjectName("map")
         self.verticalLayout.addWidget(self.map)
@@ -46,7 +47,6 @@ class Ui_MainAPI(object):
         _translate = QtCore.QCoreApplication.translate
         MainAPI.setWindowTitle(_translate("MainAPI", "Редактор Карты"))
         self.SubmitMain.setText(_translate("MainAPI", "Создать карту"))
-        self.map.setText(_translate("MainAPI", "TextLabel"))
 
 
 if __name__ == "__main__":

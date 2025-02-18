@@ -40,11 +40,13 @@ class MainAPI(QMainWindow):
                 self.msq = QMessageBox(self).information(self, 'Не введены данные', 'Вы не ввели нужные данные')
                 return
 
+            # параметры получения координат
             geocoder_params = {
                 "apikey": "8013b162-6b42-4997-9691-77b7074026e0",
                 "geocode": self.ui.XY_Line.text(),
                 "format": "json"
             }
+
             url = requests.get(self.geocoder_api_server, params=geocoder_params)
 
             if not url:
