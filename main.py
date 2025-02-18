@@ -31,7 +31,7 @@ class MainAPI(QMainWindow):
 
         self.ui.SubmitMain.clicked.connect(self.submitMap)
 
-        self.setFixedSize(400, 300)
+        self.setFixedSize(379, 400)
         self.show()
 
     def submitMap(self):
