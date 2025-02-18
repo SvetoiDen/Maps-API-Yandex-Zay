@@ -56,7 +56,7 @@ class MainAPI(QMainWindow):
             # Собираем параметры для запроса к StaticMapsAPI:
             map_params = {
                 "ll": ",".join([toponym_longitude, toponym_latitude]),
-                "spn": ",".join(map(str, span)),
+                "spn": ",".join([self.ui.scaleLine.text(), self.ui.scaleLine.text()]),
                 "l": "map",
                 "pt": f"{toponym_longitude},{toponym_latitude},pm2dgl",
                 "apikey": "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
