@@ -45,37 +45,29 @@ class MainAPI(QMainWindow):
                 self.msq = QMessageBox(self).information(self, 'Не введены данные', 'Вы не ввели нужные данные')
                 return
 
-            # параметры получения координат
-            geocoder_params = {
-                "apikey": "8013b162-6b42-4997-9691-77b7074026e0",
-                "geocode": self.ui.XY_Line.text(),
-                "format": "json"
-            }
+            toponym = self.get_toponym_info(self.ui.XY_Line.text())
+            toponym_coordinates = toponym["Point"]["pos"]
+            toponym_longitude, toponym_latitude = toponym_coordinates.split(" ")
 
-            url = requests.get(self.geocoder_api_server, params=geocoder_params)
-
-            if not url:
-                self.msq = QMessageBox(self).information(self, 'Запрос не получен',
-                                                         'Не смогли получить запрос. Повторите попытку')
-                return
-
-            # Преобразуем ответ в json-объект
-            json_response = url.json()
-            # Получаем первый топоним из ответа геокодера.
-            toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-            # Координаты центра топонима:
-            toponym_coodrinates = toponym["Point"]["pos"]
-            # Долгота и широта:
-            toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+            lower_corner = toponym["boundedBy"]["Envelope"]["lowerCorner"].split()
+            upper_corner = toponym["boundedBy"]["Envelope"]["upperCorner"].split()
+            span = self.get_map_scale(lower_corner, upper_corner)
 
             # Собираем параметры для запроса к StaticMapsAPI:
             map_params = {
-                "ll": ",".join([toponym_longitude, toponym_lattitude]),
-                "spn": ",".join([self.ui.scaleLine.text(), self.ui.scaleLine.text()]),
-                "apikey": self.apikey,
+                "ll": ",".join([toponym_longitude, toponym_latitude]),
+                "spn": ",".join(map(str, span)),
+                "l": "map",
+                "pt": f"{toponym_longitude},{toponym_latitude},pm2dgl",
+                "apikey": "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
             }
 
             urlMap = requests.get(self.map_api_server, params=map_params)
+
+            if not urlMap:
+                self.msq = QMessageBox(self).information(self, 'Запрос не получен',
+                                                         'Не смогли получить запрос. Повторите попытку')
+                return
 
             imagePixmap = QPixmap(630, 630)
             self.setFixedSize(630, 630)
@@ -86,6 +78,31 @@ class MainAPI(QMainWindow):
                                                  'Вы не корректно ввели данные. Повторите попытку')
             print(traceback.format_exc())
             return
+
+    def get_map_scale(self, lower_corner, upper_corner):
+        lower_longitude, lower_latitude = map(float, lower_corner)
+        upper_longitude, upper_latitude = map(float, upper_corner)
+
+        delta_longitude = abs(upper_longitude - lower_longitude)
+        delta_latitude = abs(upper_latitude - lower_latitude)
+
+        return delta_longitude, delta_latitude
+
+    def get_toponym_info(self, toponym_to_find):
+        geocoder_params = {
+            "apikey": "8013b162-6b42-4997-9691-77b7074026e0",
+            "geocode": toponym_to_find,
+            "format": "json"
+        }
+
+        response = requests.get(self.geocoder_api_server, params=geocoder_params)
+
+        if not response:
+            raise RuntimeError("Ошибка запроса для геокодера")
+
+        json_response = response.json()
+        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        return toponym
 
 
 if __name__ == '__main__':
