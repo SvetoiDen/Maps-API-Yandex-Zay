@@ -71,6 +71,7 @@ class MainAPI(QMainWindow):
             urlMap = requests.get(self.map_api_server, params=map_params)
 
             imagePixmap = QPixmap(630, 630)
+            self.setFixedSize(630, 630)
             imagePixmap.loadFromData(QByteArray(urlMap.content))
             self.ui.map.setPixmap(imagePixmap)
         except:
