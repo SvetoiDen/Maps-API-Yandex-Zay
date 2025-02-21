@@ -2,8 +2,8 @@ import traceback
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QMessageBox
 )
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import QByteArray
+from PyQt6.QtGui import QPixmap, QImage, QTransform
+from PyQt6.QtCore import QByteArray, Qt
 import sys
 from io import BytesIO
 from PIL import Image
@@ -18,6 +18,7 @@ from data.form.main_api import Ui_MainAPI
 class MainAPI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.img_size = [630, 630]
         self.ui = Ui_MainAPI()
         self.ui.setupUi(self)
 
@@ -74,16 +75,72 @@ class MainAPI(QMainWindow):
             }
 
             urlMap = requests.get(self.map_api_server, params=map_params)
+            print(urlMap.status_code, urlMap.url)
 
             imagePixmap = QPixmap(630, 630)
-            self.setFixedSize(630, 630)
             imagePixmap.loadFromData(QByteArray(urlMap.content))
+            self.full_img = Image.open(BytesIO(urlMap.content))
+            self.full_img_size = (630, 630)
+            self.img_size = [50, 50]
+            self.img_pos = [0, 0]
+            self.ui.map.setFocus()
             self.ui.map.setPixmap(imagePixmap)
-        except:
+        except Exception:
             self.msg = QMessageBox(self).warning(self, 'Произошла ошибка', 'Вы не корректно ввели данные. Повторите попытку')
             print(traceback.format_exc())
             return
 
+    def draw_map(self):
+        img = self.full_img.crop((*self.img_pos, self.img_pos[0] + self.img_size[0], self.img_pos[1] + self.img_size[1])).resize((630, 630))
+        img = img.convert("RGB")
+
+        imagePixmap = QPixmap(QImage(img.tobytes("raw", "RGB"), img.size[0], img.size[1], img.size[0]*3, QImage.Format.Format_RGB888))
+        self.ui.map.setPixmap(imagePixmap)
+
+    def keyPressEvent(self, event):
+        self.move_delta = self.img_size[0] // 10
+        if event.key() == Qt.Key.Key_Up:
+            self.img_pos[1] -= self.move_delta
+            self.img_pos[1] = max(self.img_pos[1], 0)
+            self.draw_map()
+
+        elif event.key() == Qt.Key.Key_Down:
+            self.img_pos[1] += self.move_delta
+            self.img_pos[1] = min(self.img_pos[1], self.full_img_size[1] - self.img_size[1])
+            self.draw_map()
+
+        elif event.key() == Qt.Key.Key_Left:
+            self.img_pos[0] -= self.move_delta
+            self.img_pos[0] = max(self.img_pos[0], 0)
+            self.draw_map()
+
+        elif event.key() == Qt.Key.Key_Right:
+            self.img_pos[0] += self.move_delta
+            self.img_pos[0] = min(self.img_pos[0], self.full_img_size[0] - self.img_size[0])
+            self.draw_map()
+
+        elif event.key() == Qt.Key.Key_PageUp and self.img_size[1] < self.full_img_size[1]:
+            self.img_size[0] += 10
+            self.img_size[1] += 10
+            self.img_pos[0] -= 5
+            self.img_pos[1] -= 5
+            self.img_pos[1] = max(self.img_pos[1], 0)
+            self.img_pos[0] = max(self.img_pos[0], 0)
+            self.draw_map()
+
+        elif event.key() == Qt.Key.Key_PageDown and self.img_size[1] > 10:
+            self.img_size[0] -= 10
+            self.img_size[1] -= 10
+            self.img_pos[0] += 5
+            self.img_pos[1] += 5
+            self.img_pos[1] = max(self.img_pos[1], 0)
+            self.img_pos[0] = max(self.img_pos[0], 0)
+            self.img_pos[0] = min(self.img_pos[0], self.full_img_size[0] - self.img_size[0])
+            self.img_pos[1] = min(self.img_pos[1], self.full_img_size[1] - self.img_size[1])
+            self.draw_map()
+
+        print("b")
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
